@@ -1,0 +1,36 @@
+;;;; sdl-mixer.setup -*- Scheme -*-
+
+(define sources
+  '("sdl2-mixer-lolevel" "sdl2-mixer"))
+
+(let* ((escape-flags (lambda (fs)
+		       (map
+			(lambda (s) (if (not (or (string-prefix-ci? "-l" s)
+						 (string-prefix-ci? "-i" s)
+						 (string-prefix-ci? "-d" s)))
+					(sprintf " -C ~a " s)
+					(sprintf " ~a " s)))
+			(string-split fs))))
+       (sdl2-cflags (apply string-append
+			  (escape-flags
+			   (with-input-from-pipe "sdl2-config --cflags" read-line))))
+       (sdl2-lflags (apply string-append
+                          (escape-flags
+                           (with-input-from-pipe "sdl2-config --libs" read-line)))))
+  (print "Building with sdl-flags: " sdl2-cflags)
+  (print "Building with linker flags: " sdl2-lflags)
+
+  (for-each (lambda (s)
+              (let ((source (string-append s ".scm"))
+                    (import (string-append s ".import.scm")))
+                (compile -s -O3 -d1 ,source -J -lSDL2 -lSDL2_mixer ,sdl2-cflags ,sdl2-lflags)
+                (compile -s -O3 -d0 ,import ,sdl2-cflags ,sdl2-lflags)))
+            sources))
+
+(install-extension 'sdl2-mixer
+                   (fold (lambda (x s)
+                           (cons (string-append x ".so")
+                                 (cons (string-append x ".import.so") s)))
+                         '() sources)
+                   '((version "0.5")))
+

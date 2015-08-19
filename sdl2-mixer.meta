@@ -1,0 +1,8 @@
+;;; sdl.meta -*- Scheme -*-
+
+((category sound)
+ (author "Christian Kellermann")
+ (synopsis "Basic SDL mixer support")
+ (license "LGPL")
+ (foreign-depends "libsdl-mixer2.0-dev")
+ (files "sdl2-mixer.setup" "sdl2-mixer-lolevel.scm" "sdl2-mixer.scm"))
